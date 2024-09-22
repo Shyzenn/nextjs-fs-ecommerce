@@ -2,6 +2,7 @@ import { SidebarProvider } from "./SidebarContext";
 import type { Metadata } from "next";
 import "../globals.css";
 import Sidebar from "../components/admin/Sidebar";
+import Providers from "../components/admin/Providers";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,8 +17,10 @@ export default function RootLayout({
   return (
     <SidebarProvider>
       <div className="bg-[#f5f5f5] flex ">
-        <Sidebar />
-        <main className="w-full overflow-auto h-svh">{children}</main>
+        <Providers>
+          <Sidebar />
+          <main className="w-full overflow-auto h-screen">{children}</main>
+        </Providers>
       </div>
     </SidebarProvider>
   );

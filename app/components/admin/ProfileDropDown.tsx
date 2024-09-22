@@ -1,5 +1,5 @@
 import avatarPlaceholder from "@/app/assets/images/avatar_placeholder.png";
-import { Lock, LogOut, Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { handleSignOut } from "@/app/authActions";
+import { PiStorefront } from "react-icons/pi";
 
 export default function ProfileDropDown() {
   return (
@@ -43,9 +44,9 @@ export default function ProfileDropDown() {
           </DropdownMenuItem>
           {/* TODO: Show this only for admins */}
           <DropdownMenuItem asChild>
-            <Link href="/admin">
-              <Lock className="mr-2 h-4 w-4" />
-              Admin
+            <Link href="/">
+              <PiStorefront className="mr-2 h-4 w-4" />
+              Store
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>

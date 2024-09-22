@@ -41,15 +41,15 @@ export const productSchema = z.object({
   description: z
     .string()
     .min(1, { message: "Product description is required." }),
-  price: z.string().min(0.01, { message: "Price must be greater than 0." }),
-  stock: z.string().min(1, { message: "Stock is required." }),
+  price: z.number().min(0.01, { message: "Price must be greater than 0." }),
+  stock: z.number().min(1, { message: "Stock is required." }),
   brand: z.string({ message: "Brand is required." }),
   type: z.string({ message: "Type is required." }),
   size: z
     .array(z.string())
     .min(1, { message: "At least one size is required." }),
-  mainImageUrl: z.string().url({ message: "Invalid URL for image." }),
-  secondaryImages: z.array(z.string()).max(4).optional(),
+  mainImageUrl: z.any(),
+  secondaryImages: z.any(),
 });
 
 export type TProductSchema = z.infer<typeof productSchema>;

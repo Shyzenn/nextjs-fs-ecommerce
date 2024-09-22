@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { GoHome } from "react-icons/go";
+import { BsBoxes } from "react-icons/bs";
 import { BsBag } from "react-icons/bs";
 import { PiUsers } from "react-icons/pi";
-import { BsCart2 } from "react-icons/bs";
+import { PiStorefrontBold } from "react-icons/pi";
 import { BsCash } from "react-icons/bs";
 import { Settings } from "lucide-react";
 import clsx from "clsx";
@@ -18,7 +18,7 @@ const links = [
   {
     name: "Products",
     hrefs: ["/admin/products", "/admin/products/addProduct"],
-    icon: <BsCart2 />,
+    icon: <BsBoxes />,
   },
   { name: "Customers", href: "/admin/customers", icon: <PiUsers /> },
   { name: "Orders", href: "/admin/orders", icon: <BsBag /> },
@@ -34,12 +34,12 @@ const bottomLinks = [
   {
     name: "Home",
     href: "/",
-    icon: <GoHome className="size-4" />,
+    icon: <PiStorefrontBold className="size-4" />,
   },
 ];
 
 const Sidebar = () => {
-  const { isOpen } = useSidebar(); // Use the context to get isOpen state
+  const { isOpen } = useSidebar();
   const [isHovered, setIsHovered] = useState(false);
   const pathname = usePathname();
 
