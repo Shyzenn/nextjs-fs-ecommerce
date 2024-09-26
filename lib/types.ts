@@ -41,8 +41,8 @@ export const productSchema = z.object({
   description: z
     .string()
     .min(1, { message: "Product description is required." }),
-  price: z.number().min(0.01, { message: "Price must be greater than 0." }),
-  stock: z.number().min(1, { message: "Stock is required." }),
+  price: z.number(),
+  stock: z.number(),
   brand: z.string({ message: "Brand is required." }),
   type: z.string({ message: "Type is required." }),
   size: z

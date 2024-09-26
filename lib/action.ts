@@ -71,6 +71,7 @@ export const getProductList = async (
         brand: true,
         type: true,
         mainImageUrl: true,
+        createdAt: true,
       },
       orderBy: {
         createdAt: filter === "latest" ? "desc" : "asc", // Sort by createdAt based on filter
@@ -131,7 +132,7 @@ export async function updateProduct(
     size: string[];
     brand: string;
     type: string;
-    mainImageUrl?: string;
+    mainImageUrl?: string | null;
     secondaryImages?: string[];
   },
   id: string

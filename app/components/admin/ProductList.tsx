@@ -8,17 +8,16 @@ import {
 } from "@/components/ui/table";
 import Image from "next/image";
 import React from "react";
-import { GrFormView } from "react-icons/gr";
-import { CiEdit } from "react-icons/ci";
-import { AiOutlineDelete } from "react-icons/ai";
-import Link from "next/link";
+import Action from "./form-components/Action";
+import { getProductList } from "@/lib/action";
+import EmptyTable from "./EmptyTable";
 
 const capitalizeFirstLetter = (str: string) => {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-type ProductType = {
+export type ProductType = {
   id: string;
   name: string;
   mainImageUrl: string | null;
@@ -26,13 +25,28 @@ type ProductType = {
   stock: number;
   brand: string;
   type: string;
+  createdAt: Date;
 };
 
-export default function ProductList({ products }: { products: ProductType[] }) {
+export default async function ProductList({
+  query = "",
+  currentPage = 1,
+  filter = "latest",
+}: {
+  query?: string;
+  currentPage?: number;
+  filter?: string;
+}) {
+  const products: ProductType[] = await getProductList(
+    query,
+    currentPage,
+    filter
+  );
+
   return (
     <>
       {products.length === 0 ? (
-        <div>No Products Available</div>
+        <EmptyTable content="No Product Available" />
       ) : (
         <div className="overflow-y-auto max-h-[32rem] 2xl:max-h-[40rem] px-4 bg-white">
           <Table>
@@ -53,6 +67,7 @@ export default function ProductList({ products }: { products: ProductType[] }) {
                 <TableHead className="text-black font-semibold">
                   Category
                 </TableHead>
+                <TableHead className="text-black font-semibold">Date</TableHead>
                 <TableHead className="text-black font-semibold">
                   Action
                 </TableHead>
@@ -67,6 +82,7 @@ export default function ProductList({ products }: { products: ProductType[] }) {
                         src={product.mainImageUrl as string}
                         objectFit="cover"
                         fill
+                        loading="lazy"
                         alt={product.mainImageUrl as string}
                       />
                     </div>
@@ -77,13 +93,10 @@ export default function ProductList({ products }: { products: ProductType[] }) {
                   <TableCell>{capitalizeFirstLetter(product.brand)}</TableCell>
                   <TableCell>{capitalizeFirstLetter(product.type)}</TableCell>
                   <TableCell>
-                    <div className="flex text-xl gap-2">
-                      <GrFormView />
-                      <Link href={`/admin/products/editProduct/${product.id}`}>
-                        <CiEdit />
-                      </Link>
-                      <AiOutlineDelete />
-                    </div>
+                    {new Date(product.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Action product={product} />
                   </TableCell>
                 </TableRow>
               ))}

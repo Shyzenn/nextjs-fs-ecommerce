@@ -3,8 +3,9 @@ import Pagination from "@/app/components/admin/Pagination";
 import ProductList from "@/app/components/admin/ProductList";
 import ProfileDropDown from "@/app/components/admin/ProfileDropDown";
 import Search from "@/app/components/admin/search";
+import { TableRowSkeleton } from "@/app/components/admin/Skeleton";
 import MobileMenu from "@/app/components/MobileMenu";
-import { fetchProductsPages, getProductList } from "@/lib/action";
+import { fetchProductsPages } from "@/lib/action"; // Import to fetch total pages
 import Link from "next/link";
 import { Suspense } from "react";
 import { IoAdd } from "react-icons/io5";
@@ -23,10 +24,9 @@ const page = async ({
   const filter = searchParams?.filter || "latest";
 
   const totalPages = await fetchProductsPages(query);
-  const products = await getProductList(query, currentPage, filter);
 
   return (
-    <div>
+    <div className="h-svh">
       <header className="flex justify-between px-4 py-8 xl:py-4 items-center bg-white shadow-sm sticky top-0 z-10">
         <MobileMenu />
         <div className="text-xl  sm:block font-semibold ">Products</div>
@@ -44,7 +44,7 @@ const page = async ({
             <div className="flex items-center gap-8">
               <Link
                 href="/admin/products/addProduct"
-                className="flex items-center bg-blue-500 px-2 py-1 text-white rounded-md justify-center"
+                className="flex items-center bg-blue-600 w-[8rem] px-3 py-2 text-white rounded-md justify-between hover:bg-blue-500 transition-colors duration-200"
               >
                 <IoAdd className="text-xl" />
                 <p className="text-sm">Add Product</p>
@@ -56,9 +56,15 @@ const page = async ({
             <Search placeholder="Search products..." />
           </div>
         </div>
-
-        <Suspense key={query + currentPage} fallback={<div>Loading...</div>}>
-          <ProductList products={products} />
+        <Suspense
+          key={currentPage + query + filter}
+          fallback={<TableRowSkeleton />}
+        >
+          <ProductList
+            query={query}
+            currentPage={currentPage}
+            filter={filter}
+          />
         </Suspense>
         <div className="flex w-full justify-center mt-4">
           <Pagination totalPages={totalPages} />

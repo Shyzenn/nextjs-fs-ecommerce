@@ -3,6 +3,7 @@ import Image from "next/image";
 import React from "react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { MdOutlineFileUpload } from "react-icons/md";
+import MainImageLabel from "./MainImageLabel";
 
 interface AddProductRightProps {
   register: UseFormRegister<TProductSchema>;
@@ -28,30 +29,9 @@ const AddProductRight: React.FC<AddProductRightProps> = ({
         <div className="border gap-2 p-5">
           <h1 className=" font-semibold my-4">Main Image</h1>
           <div className="border flex flex-col items-center p-2 pb-4 lg:flex-row gap-2">
-            <label
-              htmlFor="files"
-              className={`border-2 border-blue-300 bg-blue-50 border-dashed w-full flex justify-center flex-col items-center md:h-[25rem] ${
-                previewImage ? "py-0" : "py-8"
-              }`}
-            >
-              {previewImage ? (
-                <div className="relative my-2 w-[15rem] h-[16rem] md:w-[25rem] md:h-[25rem]">
-                  <Image
-                    objectFit="cover"
-                    fill
-                    src={previewImage as string}
-                    alt="Selected Image"
-                  />
-                </div>
-              ) : (
-                <>
-                  <MdOutlineFileUpload className="text-4xl" />
-                  Choose a file
-                </>
-              )}
-            </label>
+            <MainImageLabel mainImage={previewImage} />
             <input
-              id="files"
+              id="mainImage"
               type="file"
               className="file:hidden text-white w-0"
               {...register("mainImageUrl", {
@@ -111,12 +91,12 @@ const AddProductRight: React.FC<AddProductRightProps> = ({
                 accept="image/*"
                 className="file:hidden text-white w-0"
               />
-              {errors.secondaryImages?.message && (
-                <p className="mt-2 text-sm text-red-500">
-                  {errors.secondaryImages.message as string}
-                </p>
-              )}
             </div>
+            {errors.secondaryImages?.message && (
+              <p className="mt-2 text-sm text-red-500 text-center">
+                {errors.secondaryImages.message as string}
+              </p>
+            )}
           </div>
         </div>
       </div>

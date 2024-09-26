@@ -8,33 +8,26 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import LoadingButton from "@/components/loading-button";
 import { addProduct } from "@/lib/action";
 import { IoArrowBack } from "react-icons/io5";
 import { useState } from "react";
-import AddProductRight from "@/app/components/admin/AddProductRight";
-import AddProductLeft from "@/app/components/admin/AddProductLeft";
+import AddProductRight from "@/app/components/admin/form-components/AddProductRight";
+import AddProductLeft from "@/app/components/admin/form-components/AddProductLeft";
 import { uploadMainImage } from "@/uploadImage/uploadMainImage";
 import { uploadSecondaryImages } from "@/uploadImage/uploadSecondaryImages";
-
-const sizes = [
-  { size: "EU-45" },
-  { size: "EU-44" },
-  { size: "EU-43" },
-  { size: "EU-42" },
-  { size: "EU-41" },
-  { size: "EU-40" },
-  { size: "EU-39" },
-  { size: "EU-38" },
-  { size: "EU-37" },
-  { size: "EU-36" },
-];
+import ProductFormButton from "@/app/components/admin/form-components/ProductFormButton";
+import { handleImagePreview } from "@/lib/images/mainImage";
+import { handleAdditonalImage } from "@/lib/images/additionalImage";
+import { sizes } from "@/app/admin/sizes";
+import Modal from "@/app/components/admin/form-components/imageModal";
 
 const AddProduct = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [additionalPreviewImages, setAdditionalPreviewImages] = useState<
     string[]
   >([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const router = useRouter();
   const notify = () =>
@@ -56,60 +49,17 @@ const AddProduct = () => {
     },
   });
 
-  const handleMultipleImages = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      const fileArray = Array.from(files);
-
-      // Limit to 4 images
-      if (fileArray.length > 4) {
-        setError("secondaryImages", {
-          type: "manual",
-          message: "You can only upload up to 4 images",
-        });
-        return;
-      }
-
-      clearErrors("secondaryImages");
-
-      const previewUrls: string[] = [];
-
-      fileArray.forEach((file) => {
-        if (!file.type.startsWith("image/")) {
-          setError("secondaryImages", {
-            type: "manual",
-            message: "Please upload valid image files",
-          });
-          return;
-        }
-
-        const imageUrl = URL.createObjectURL(file);
-        previewUrls.push(imageUrl);
-      });
-
-      setAdditionalPreviewImages(previewUrls);
-    }
+  const displayImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleImagePreview(event, setPreviewImage, setError, clearErrors);
   };
 
-  const displayImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (file) {
-      // Check if the uploaded file is an image
-      if (!file.type.startsWith("image/")) {
-        setError("mainImageUrl", {
-          type: "manual",
-          message: "Please upload a valid image file",
-        });
-        return;
-      }
-
-      clearErrors("mainImageUrl");
-
-      // If it's an image, display the preview
-      const imageUrl = URL.createObjectURL(file);
-      setPreviewImage(imageUrl);
-    }
+  const handleMultipleImages = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleAdditonalImage(
+      event,
+      setError,
+      clearErrors,
+      setAdditionalPreviewImages
+    );
   };
 
   const handleErrors = (errors: Record<string, string>) => {
@@ -170,7 +120,8 @@ const AddProduct = () => {
             alert("An unexpected error occurred.");
           }
         } catch {
-          alert("An unexpected error occurred.");
+          setModalMessage("Oops! Image are required.");
+          setIsModalOpen(true);
         }
       } else {
         alert("An unexpected error occurred.");
@@ -178,8 +129,18 @@ const AddProduct = () => {
     }
   };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalMessage("");
+  };
+
   return (
     <>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        message={modalMessage}
+      />
       <header className="flex justify-between px-4 py-8 xl:py-4 items-center bg-white shadow-sm sticky top-0 z-10">
         <MobileMenu />
         <div className="text-xl sm:block font-semibold">Add Product</div>
@@ -214,22 +175,11 @@ const AddProduct = () => {
               handleMultipleImages={handleMultipleImages}
               additionalPreviewImages={additionalPreviewImages}
             />
-
-            <div className="p-5 w-full flex justify-center gap-4 md:justify-end">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-blue-700 text-white  w-32 rounded-md"
-              >
-                {isSubmitting ? <LoadingButton /> : "Add Product"}
-              </button>
-              <Link
-                href="/admin/products"
-                className="border text-blue-950 py-3 px-10 rounded-md hover:bg-slate-50"
-              >
-                Discard
-              </Link>
-            </div>
+            <ProductFormButton
+              error={errors}
+              isSubmitting={isSubmitting}
+              buttonLabel="Add Product"
+            />
           </div>
         </form>
       </div>

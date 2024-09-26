@@ -2,22 +2,12 @@
 
 import ProfileDropDown from "@/app/components/admin/ProfileDropDown";
 import MobileMenu from "@/app/components/MobileMenu";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import Link from "next/link";
 import { productSchema, TProductSchema } from "@/lib/types";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import LoadingButton from "@/components/loading-button";
 import { updateProduct } from "@/lib/action";
 import { useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
@@ -25,21 +15,16 @@ import Image from "next/image";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { uploadMainImage } from "@/uploadImage/uploadMainImage";
 import { uploadSecondaryImages } from "@/uploadImage/uploadSecondaryImages";
+import ProductFormButton from "./form-components/ProductFormButton";
+import { handleImagePreview } from "@/lib/images/mainImage";
+import { handleAdditonalImage } from "@/lib/images/additionalImage";
+import ControlledSelect from "./form-components/ControlledSelect";
+import ControlledSize from "./form-components/ControlledSize";
+import PriceStockField from "./form-components/PriceStockField";
+import { brandOptions, typeOptions } from "@/app/admin/options";
+import MainImageLabel from "./form-components/MainImageLabel";
 
-const sizes = [
-  { size: "EU-45" },
-  { size: "EU-44" },
-  { size: "EU-43" },
-  { size: "EU-42" },
-  { size: "EU-41" },
-  { size: "EU-40" },
-  { size: "EU-39" },
-  { size: "EU-38" },
-  { size: "EU-37" },
-  { size: "EU-36" },
-];
-
-type ProductDataProps = {
+export type ProductDataProps = {
   id: string;
   name: string;
   description: string;
@@ -90,15 +75,16 @@ const EditProductForm = ({
     formState: { errors, isSubmitting },
     setError,
     control,
+    clearErrors,
   } = useForm<TProductSchema>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       size,
       brand: newBrand,
       type: newType,
-      // secondaryImages: newSecondaryImages,
     },
   });
+
   const handleErrors = (errors: Record<string, string>) => {
     Object.keys(errors).forEach((field) => {
       setError(field as keyof TProductSchema, {
@@ -106,6 +92,27 @@ const EditProductForm = ({
         message: errors[field],
       });
     });
+  };
+
+  const displayImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setNewMainImage(file);
+    if (file) {
+      // Update the mainImageUrl to a local preview of the selected image
+      handleImagePreview(e, setUpdatedMainImageUrl, setError, clearErrors);
+    }
+  };
+
+  const handleMultipleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+
+    setNewSecondaryImages(files); // Update with selected files
+
+    if (files.length > 0) {
+      handleAdditonalImage(e, setError, clearErrors, setUpdatedSecondaryImages);
+    } else {
+      setUpdatedSecondaryImages(secondaryImages); // Reset to existing images if no files
+    }
   };
 
   const onSubmit = async (data: TProductSchema) => {
@@ -139,8 +146,8 @@ const EditProductForm = ({
       if (responseData.errors) {
         handleErrors(responseData.errors);
       } else if (responseData.success) {
-        router.push("/admin/products");
         notify();
+        router.push("/admin/products");
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -221,142 +228,49 @@ const EditProductForm = ({
             </div>
             <h1 className="mb-2 text-lg font-semibold">Category</h1>
             <div className="border p-5 mb-5">
-              <div className="flex flex-col mb-4">
-                <label htmlFor="product-brand" className="text-slate-400">
-                  Product Brand
-                </label>
-                <Controller
-                  control={control}
-                  name="brand"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a brand" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Brands</SelectLabel>
-                          <SelectItem value="nike">Nike</SelectItem>
-                          <SelectItem value="adidas">Adidas</SelectItem>
-                          <SelectItem value="vans">Vans</SelectItem>
-                          <SelectItem value="puma">Puma</SelectItem>
-                          <SelectItem value="converse">Converse</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.brand && (
-                  <p className="mt-2 text-sm text-red-500">
-                    {errors.brand.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col mb-4">
-                <label htmlFor="product-category" className="text-slate-400">
-                  Product Category
-                </label>
-                <Controller
-                  control={control}
-                  name="type"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Categories</SelectLabel>
-                          <SelectItem value="running">Running</SelectItem>
-                          <SelectItem value="basketball">Basketball</SelectItem>
-                          <SelectItem value="fashion">Fashion</SelectItem>
-                          <SelectItem value="skate">Skate</SelectItem>
-                          <SelectItem value="walking">Walking</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.type && (
-                  <p className="mt-2 text-sm text-red-500">
-                    {errors.type.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <h1 className="mb-2 text-lg font-semibold">Price</h1>
-            <div className="border p-5 mb-5">
-              <input
-                {...register("price", { valueAsNumber: true })}
-                onChange={(e) => setNewPrice(parseFloat(e.target.value))}
-                value={newPrice}
-                className="border p-2 rounded-md w-full"
-                placeholder="$0.00"
-                type="number"
-                min="0"
-                step="0.01"
+              <ControlledSelect
+                label="Product Brand"
+                control={control}
+                name="brand"
+                placeholder="Select a brand"
+                selectLabel="Brands"
+                errors={errors.brand?.message}
+                options={brandOptions}
               />
-              {errors.price && (
-                <p className="mt-2 text-sm text-red-500">
-                  {errors.price.message}
-                </p>
-              )}
-            </div>
-            <h1 className="mb-2 text-lg font-semibold">Stock</h1>
-            <div className="border p-5 mb-5">
-              <input
-                {...register("stock", { valueAsNumber: true })}
-                onChange={(e) => setNewStock(parseFloat(e.target.value))}
-                value={newStock}
-                className="border p-2 rounded-md w-full"
-                placeholder="0"
-                type="number"
+              <ControlledSelect
+                label="Product Category"
+                control={control}
+                name="type"
+                selectLabel="Categories"
+                placeholder="Select a category"
+                errors={errors.type?.message}
+                options={typeOptions}
               />
-              {errors.stock && (
-                <p className="mt-2 text-sm text-red-500">
-                  {`${errors.stock.message}`}
-                </p>
-              )}
             </div>
 
-            <h1 className="mb-2 text-lg font-semibold">Select Sizes</h1>
-            <Controller
-              control={control}
-              name="size"
-              render={({ field }) => {
-                const selectedSizes = field.value;
-
-                return (
-                  <div className="border p-5 grid grid-cols-2 gap-2 lg:grid-cols-5">
-                    {sizes.map(({ size }) => (
-                      <button
-                        key={size}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          // Toggle size selection logic
-                          const newSizes = selectedSizes.includes(size)
-                            ? selectedSizes.filter((s: string) => s !== size)
-                            : [...selectedSizes, size];
-                          field.onChange(newSizes);
-                        }}
-                        className={`p-2 ${
-                          selectedSizes.includes(size)
-                            ? "bg-blue-500 text-white rounded-md px-6 py-1"
-                            : "border px-6 py-1 rounded-md"
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                );
-              }}
+            <PriceStockField
+              label="Price"
+              name="price"
+              onChange={(e) => setNewPrice(parseFloat(e.target.value))}
+              placeholder="$0.00"
+              register={register}
+              value={newPrice}
+              errors={errors.price?.message}
+              min={0}
+              step={0.01}
+              type="number"
             />
-            {errors.size && (
-              <p className="mt-2 text-sm text-red-500">{errors.size.message}</p>
-            )}
+            <PriceStockField
+              label="Stock"
+              name="stock"
+              onChange={(e) => setNewStock(parseFloat(e.target.value))}
+              value={newStock}
+              placeholder="0"
+              type="number"
+              errors={errors.stock?.message}
+              register={register}
+            />
+            <ControlledSize control={control} errors={errors.size?.message} />
           </div>
           {/* RIGHT */}
           <div className="bg-white xl:w-[50%]">
@@ -365,56 +279,31 @@ const EditProductForm = ({
               <div className="border gap-2 p-5">
                 <h1 className="font-semibold my-4">Main Image</h1>
                 <div className="border flex flex-col items-center p-2 pb-4 lg:flex-row gap-2">
-                  <label
-                    htmlFor="mainImage"
-                    className={`border-2 border-blue-300 bg-blue-50 border-dashed w-full flex justify-center items-center py-8 ${
-                      updatedMainImageUrl ? "py-0" : "py-8"
-                    }`}
-                  >
-                    {updatedMainImageUrl ? (
-                      <Image
-                        src={updatedMainImageUrl}
-                        alt="Main Image Preview"
-                        width={250}
-                        height={250}
-                      />
-                    ) : (
-                      <>
-                        <MdOutlineFileUpload className="text-4xl" />
-                        Choose a file
-                      </>
-                    )}
-                  </label>
+                  <MainImageLabel mainImage={updatedMainImageUrl} />
                   <input
                     id="mainImage"
                     type="file"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      setNewMainImage(file);
-                      if (file) {
-                        // Update the mainImageUrl to a local preview of the selected image
-                        const previewUrl = URL.createObjectURL(file);
-                        setUpdatedMainImageUrl(previewUrl);
-                      }
-                    }}
+                    onChange={displayImage}
                     accept="image/*"
                     className="hidden"
                   />
                 </div>
               </div>
-              <div className="border gap-2 p-5">
-                <h1 className="font-semibold my-4">Upload Up to 4 Images</h1>
+              <div className="border gap-2 p-5 mt-6">
+                <h1 className="font-semibold my-4">Addtional Images</h1>
                 <div className="border flex flex-col items-center p-2 pb-4 lg:flex-row gap-2">
                   <label
                     htmlFor="secondaryImages"
                     className="border-2 border-blue-300 bg-blue-50 border-dashed w-full flex justify-center items-center py-8"
                   >
                     {newSecondaryImages.length <= 0 ? (
-                      // Display previously uploaded secondary images if no new images are selected
                       updatedSecondaryImages.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 2xl:flex 2xl:flex-wrap 2xl:mx-2">
                           {updatedSecondaryImages.map((url, index) => (
-                            <div key={index} className="relative w-32 h-32">
+                            <div
+                              key={index}
+                              className="relative w-[100px] h-[100px] lg:w-[150px] lg:h-[150px] xl:w-[80px] xl:h-[80px]  2xl:w-[150px] 2xl:h-[150px]"
+                            >
                               <Image
                                 src={url}
                                 alt={`Secondary Image ${index + 1}`}
@@ -431,10 +320,12 @@ const EditProductForm = ({
                         </>
                       )
                     ) : (
-                      // Display new secondary image previews
-                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 2xl:flex 2xl:flex-wrap 2xl:mx-2">
                         {newSecondaryImages.map((file, index) => (
-                          <div key={index} className="relative w-32 h-32">
+                          <div
+                            key={index}
+                            className="relative w-[100px] h-[100px] lg:w-[150px] lg:h-[150px] xl:w-[80px] xl:h-[80px]  2xl:w-[150px] 2xl:h-[150px]"
+                          >
                             <Image
                               src={URL.createObjectURL(file)}
                               alt={`New Secondary Image Preview ${index + 1}`}
@@ -450,49 +341,24 @@ const EditProductForm = ({
                     id="secondaryImages"
                     type="file"
                     multiple
-                    onChange={(e) => {
-                      const files = e.target.files
-                        ? Array.from(e.target.files)
-                        : [];
-
-                      setNewSecondaryImages(files); // Update with selected files
-
-                      if (files.length > 0) {
-                        const previewUrls = files.map((file) =>
-                          URL.createObjectURL(file)
-                        );
-                        setUpdatedSecondaryImages(previewUrls); // Update previews for selected files
-                      } else {
-                        setUpdatedSecondaryImages(secondaryImages); // Reset to existing images if no files
-                      }
-                    }}
+                    onChange={handleMultipleImages}
                     accept="image/*"
                     className="hidden"
                   />
-                  {errors.secondaryImages?.message && (
-                    <p className="mt-2 text-sm text-red-500">
-                      {errors.secondaryImages.message as string}
-                    </p>
-                  )}
                 </div>
+                {errors.secondaryImages?.message && (
+                  <p className="mt-2 text-sm text-red-500 text-center">
+                    {errors.secondaryImages.message as string}
+                  </p>
+                )}
               </div>
             </div>
 
-            <div className="p-5 w-full flex justify-center gap-4 md:justify-end">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-blue-700 text-white  w-32 rounded-md"
-              >
-                {isSubmitting ? <LoadingButton /> : "Edit Product"}
-              </button>
-              <Link
-                href="/admin/products"
-                className="border text-blue-950 py-3 px-10 rounded-md hover:bg-slate-50"
-              >
-                Discard
-              </Link>
-            </div>
+            <ProductFormButton
+              isSubmitting={isSubmitting}
+              buttonLabel="Edit Product"
+              error={errors}
+            />
           </div>
         </form>
       </div>

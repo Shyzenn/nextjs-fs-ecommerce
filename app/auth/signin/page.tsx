@@ -35,63 +35,65 @@ const Login = () => {
   };
 
   return (
-    <Card className="w-[400px] mx-auto my-72">
-      <CardHeader>
-        <CardTitle className="text-center text-2xl">Login</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                {...register("username")}
-                id="username"
-                placeholder="username"
-                type="text"
-              />
-              {errors.username && (
-                <p className="mt-2 text-sm text-red-500">
-                  {errors.username.message}
+    <div className="flex justify-center items-center h-screen">
+      <Card className="w-[400px] ">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl">Login</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  {...register("username")}
+                  id="username"
+                  placeholder="username"
+                  type="text"
+                />
+                {errors.username && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {errors.username.message}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  {...register("password")}
+                  id="password"
+                  placeholder="password"
+                  type="password"
+                />
+                {errors.password && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+              {manualError && (
+                <p className="mt-2 text-sm text-red-500 text-center">
+                  {manualError}
                 </p>
               )}
             </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                {...register("password")}
-                id="password"
-                placeholder="password"
-                type="password"
-              />
-              {errors.password && (
-                <p className="mt-2 text-sm text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-            {manualError && (
-              <p className="mt-2 text-sm text-red-500 text-center">
-                {manualError}
-              </p>
-            )}
-          </div>
-          <Button
-            className="w-full py-5 mt-5"
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? <LoadingButton /> : "Sign in"}
-          </Button>
-          <p className="mt-2 text-sm text-slate-500">
-            Don&apos;t have an account? Sign up{" "}
-            <Link href="/register" className="text-black font-semibold">
-              here
-            </Link>
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+            <Button
+              className="w-full py-5 mt-5"
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? <LoadingButton /> : "Sign in"}
+            </Button>
+            <p className="mt-2 text-sm text-slate-500">
+              Don&apos;t have an account? Sign up{" "}
+              <Link href="/register" className="text-black font-semibold">
+                here
+              </Link>
+            </p>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
